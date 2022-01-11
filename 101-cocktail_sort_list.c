@@ -1,90 +1,91 @@
 #include "sort.h"
-#include <stdio.h>
-
 /**
- * swap_list - swaps 2 nodes in a doubly linked list of ints
- * @temp2: the node to swap with it's prior
+ * swap1 - swaps nodes from left to right
+ * @list: pointer to list
+ * @head: pointer to head node
+ * @aux: auxiliar pointer
+ * Return: no return
  */
-void swap_list(listint_t *temp2)
+void swap1(listint_t **list, listint_t *head, listint_t *aux)
 {
-	if (temp2->next == NULL &&
-	    temp2->prev->prev == NULL)
-	{ /* 2 element list */
-		temp2->prev->next = NULL;
-		temp2->prev->prev = temp2;
-		temp2->next = temp2->prev;
-		temp2->prev = NULL;
-	}
-	else if (temp2->next == NULL)
-	{ /* end of list */
-		temp2->prev->prev->next = temp2;
-		temp2->next = temp2->prev;
-		temp2->prev = temp2->prev->prev;
-		temp2->next->prev = temp2;
-		temp2->next->next = NULL;
-	}
-	else if (temp2->prev->prev == NULL)
-	{ /* beginning of list */
-		temp2->prev->next = temp2->next;
-		temp2->next->prev = temp2->prev;
-		temp2->next = temp2->prev;
-		temp2->prev = NULL;
-		temp2->next->prev = temp2;
-	}
+	if (head->prev)
+		head->prev->next = aux;
 	else
-	{ /* mid-list, no NULL in sight */
-		temp2->prev->next = temp2->next;
-		temp2->next->prev = temp2->prev;
-		temp2->next = temp2->prev;
-		temp2->prev->prev->next = temp2;
-		temp2->prev = temp2->prev->prev;
-		temp2->next->prev = temp2;
-	}
+		*list = aux;
+	if (aux->next)
+		aux->next->prev = head;
+	head->next = aux->next;
+	aux->prev = head->prev;
+	aux->next = head;
+	head->prev = aux;
+	print_list(*list);
+
+}
+/**
+ * swap2 - swaps nodes from right to left
+ * @list: pointer to list
+ * @head: pointer to head node
+ * @aux: auxiliar pointer
+ * Return: no return
+ */
+void swap2(listint_t **list, listint_t *head, listint_t *aux)
+{
+	aux = head->prev;
+	aux->next->prev = aux->prev;
+	if (aux->prev)
+		aux->prev->next = aux->next;
+	else
+		*list = aux->next;
+	aux->prev = aux->next;
+	aux->next = aux->next->next;
+	aux->prev->next = aux;
+	if (aux->next)
+		aux->next->prev = aux;
+	print_list(*list);
 }
 
 /**
- * cocktail_sort_list - sorts a 2x linked list of integers in ascending order
- * @list: A doubly linked list
- */
+ * cocktail_sort_list - sorts a doubly linked list of integers
+ * in ascending order using the Cocktail sort ailgorithm
+ * @list: pointer to the list head
+ * Return: no return
+ **/
 void cocktail_sort_list(listint_t **list)
-{	listint_t *temp;
-	size_t i, length, flag = 0;
+{
+	listint_t *head, *aux;
+	int flag = 1;
 
-	if (list == NULL || (*list) == NULL || (*list)->next == NULL)
-		return;
-	temp = *list;
-	for (length = 0; temp->next != NULL; length++)
-		temp = temp->next;
-	temp = *list;
-	while (length > 0)
-	{	flag = 0;
-		for (i = 0; i < length; i++)
+	if (list)
+	{
+		head = *list;
+		while (flag != 0)
 		{
-			temp = temp->next;
-			if (temp->prev->n > temp->n)
+			flag = 0;
+			while (head->next)
 			{
-				swap_list(temp);
-				print_list(*list);
-				temp = temp->next;
-				flag = 1;
+				if (head->n > head->next->n)
+				{
+					aux = head->next;
+					swap1(list, head, aux);
+					flag = 1;
+				}
+				else
+					head = head->next;
 			}
-		}
-		if (flag == 0)
-			return;
-		flag = 0;
-		for (i = 0; i < length; i++)
-		{
-			if (temp->prev->n <= temp->n)
-				temp = temp->prev;
-			else if (temp->prev->n > temp->n)
+			if (flag == 0)
+				break;
+			flag = 0;
+			while (head->prev)
 			{
-				swap_list(temp);
-				if (temp->prev == NULL)
-					*list = temp;
-				print_list(*list);
-				flag = 1;
-			}		}
-		if (flag == 0)
-			return;
-		length--;
-	}}
+				if (head->prev->n > head->n)
+				{
+					swap2(list, head, aux);
+					flag = 1;
+				}
+				else
+					head = head->prev;
+			}
+
+		}
+	}
+}
